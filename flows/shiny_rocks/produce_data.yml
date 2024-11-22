@@ -8,22 +8,21 @@ labels:
   tag: producer
 
 tasks:
+  - id: python
+    type: io.kestra.plugin.scripts.python.Commands
+    namespaceFiles:
+      enabled: true
+    warningOnStdErr: false
+    beforeCommands:
+      - pip install -r scripts/produce/requirements.txt
+    commands:
+      - python scripts/produce/produce_data.py --date {{ schedule.date ?? now() | date("yyyy-MM-dd")}}
+    outputFiles:
+      - '*.csv'
 
-      - id: python
-        type: io.kestra.plugin.scripts.python.Commands
-        namespaceFiles:
-          enabled: true
-        warningOnStdErr: false
-        beforeCommands:
-          - pip install -r scripts/produce/requirements.txt
-        commands:
-          - python scripts/produce/produce_data.py --date {{ schedule.date ?? now() | date("yyyy-MM-dd")}}
-        outputFiles:
-          - '*.csv'
-
-      - id: run_date
-        type: io.kestra.plugin.core.debug.Return
-        format: '{{ schedule.date ?? now() | date("yyyy-MM-dd")}}'
+  - id: run_date
+    type: io.kestra.plugin.core.debug.Return
+    format: '{{ schedule.date ?? now() | date("yyyy-MM-dd")}}'
 
 
 triggers:

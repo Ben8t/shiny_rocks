@@ -17,7 +17,7 @@ tasks:
       - id: update
         type: io.kestra.plugin.mongodb.Update
         connection: 
-          uri: '{{secret("MONGO_CONNECTION_STRING") }}'
+          uri: '{{ secret("MONGO_CONNECTION_STRING") }}'
         database: my_database
         collection: my_collection
         filter:
@@ -34,6 +34,6 @@ tasks:
 triggers:
   - id: payment_in_mongo
     type: io.kestra.plugin.debezium.mongodb.RealtimeTrigger
-    hostname: '{{secret("MONGO_HOST") }}'
+    hostname: '{{ secret("MONGO_HOST") }}'
     port: "27017"
-    connectionString: '{{secret("MONGO_CONNECTION_STRING") }}'
+    connectionString: '{{ secret("MONGO_CONNECTION_STRING") }}'

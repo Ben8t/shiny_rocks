@@ -16,7 +16,6 @@ inputs:
     type: INT
 
 tasks:
-
   - id: wait
     type: io.kestra.plugin.scripts.shell.Commands
     taskRunner:

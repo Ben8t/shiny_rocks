@@ -9,8 +9,7 @@ description: |
 labels:
   tag: sales
 
-tasks:
-  
+tasks:  
   - id: query_data
     type: io.kestra.plugin.gcp.bigquery.Query
     serviceAccount: '{{ secret("GCP_CREDS") }}'
@@ -19,15 +18,16 @@ tasks:
     store: true 
   
   - id: write_csv
-    type: io.kestra.plugin.serdes.csv.CsvWriter
+    type: io.kestra.plugin.serdes.csv.IonToCsv
     from: '{{ outputs.query_data.uri }}'
     
   - id: get_product_id
     type: io.kestra.plugin.scripts.python.Script
     description: We use a python script to extract the distinct unique values of product_id.
     warningOnStdErr: false
-    docker:
-        image: ghcr.io/kestra-io/pydata
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+    containerImage: ghcr.io/kestra-io/pydata
     inputFiles:
       data.csv: '{{ outputs.write_csv.uri }}'
     script: |
@@ -41,24 +41,23 @@ tasks:
 
 
   - id: parallel_forecast
-    type: io.kestra.core.tasks.flows.EachParallel
+    type: io.kestra.plugin.core.flow.ForEach
+    concurrencyLimit: 0
     description: For each product_id value, we run a forecast to predict the number of orders for the next 5 days.
-    value: '{{ outputs.get_product_id.vars.product_id }}'
+    values: '{{ outputs.get_product_id.vars.product_id }}'
     tasks:
-
       - id: sequential
-        type: io.kestra.core.tasks.flows.Sequential
+        type: io.kestra.plugin.core.flow.Sequential
         tasks:
-
           - id: working_dir_forecast
-            type: io.kestra.core.tasks.flows.WorkingDirectory
+            type: io.kestra.plugin.core.flow.WorkingDirectory
             tasks:
-              
               - id: forecast
                 type: io.kestra.plugin.scripts.python.Script
                 warningOnStdErr: false
-                docker:
-                    image: ghcr.io/kestra-io/pydata
+                taskRunner:
+                  type: io.kestra.plugin.scripts.runner.docker.Docker
+                containerImage: ghcr.io/kestra-io/pydata
                 inputFiles:
                   data.csv: '{{ outputs.write_csv.uri }}'
                 beforeCommands: 
@@ -69,8 +68,9 @@ tasks:
               - id: rscript
                 type: io.kestra.plugin.scripts.r.Script
                 warningOnStdErr: false
-                docker:
-                  image: ghcr.io/kestra-io/rdata
+                taskRunner:
+                  type: io.kestra.plugin.scripts.runner.docker.Docker
+                containerImage: ghcr.io/kestra-io/rdata
                 script: |
                   library(ggplot2)
                   library(readr)
@@ -84,17 +84,16 @@ tasks:
                   geom_line() +
                   geom_point()
                   
-                  ggsave("{{outputDir}}/plot.png")
-                  
+                  ggsave("{{ outputDir }}/plot.png")         
                   
 triggers:
-
   - id: deps_etl
-    type: io.kestra.core.models.triggers.types.Flow
+    type: io.kestra.plugin.core.trigger.Flow
     conditions:
-      - type: io.kestra.core.models.conditions.types.ExecutionFlowCondition
+      - type: io.kestra.plugin.core.condition.ExecutionFlowCondition
         namespace: shiny_rocks.product
         flowId: dbt_run
-      - type: io.kestra.core.models.conditions.types.ExecutionStatusCondition
+
+      - type: io.kestra.plugin.core.condition.ExecutionStatusCondition
         in:
           - SUCCESS

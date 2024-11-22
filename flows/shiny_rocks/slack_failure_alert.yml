@@ -22,6 +22,7 @@ triggers:
         in:
           - FAILED
           - WARNING
+
       - type: io.kestra.plugin.core.condition.ExecutionNamespaceCondition
         namespace: shiny_rocks
         prefix: true
