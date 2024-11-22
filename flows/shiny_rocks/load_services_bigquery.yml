@@ -14,7 +14,6 @@ inputs:
     type: DATE
 
 tasks:
-
   - id: extract
     type: io.kestra.plugin.gcp.gcs.Upload
     serviceAccount: '{{ secret("GCP_CREDS") }}'
@@ -35,7 +34,6 @@ tasks:
     timePartitioningField: "run_date"
 
 triggers:
-
   - id: get_data
     type: io.kestra.plugin.core.trigger.Flow
     inputs:

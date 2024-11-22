@@ -39,7 +39,7 @@ tasks:
           - dbt run --profiles-dir=. --project-dir=shiny_rocks_dbt
 
 triggers:
-  - id: multiple-listen-flow
+  - id: multiple_listen_flow
     type: io.kestra.plugin.core.trigger.Flow
     conditions:
       - type: io.kestra.plugin.core.condition.ExecutionStatusCondition

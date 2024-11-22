@@ -23,8 +23,9 @@ tasks:
   - id: python
     type: io.kestra.plugin.scripts.python.Script
     warningOnStdErr: false
-    docker:
-      image: ghcr.io/kestra-io/pydata
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+    containerImage: ghcr.io/kestra-io/pydata
     beforeCommands:
       - pip install plotnine
     script: "{{ read('scripts/marketing/src/plot.py') }}"
@@ -47,7 +48,6 @@ tasks:
 
 
 triggers:
-
   - id: get_data
     type: io.kestra.plugin.core.trigger.Flow
     conditions:
